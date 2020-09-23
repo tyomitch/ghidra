@@ -369,6 +369,11 @@ define context contextreg
   ext_value_xreg=(3,5) noflow
   ext_value_frame=(6,9) noflow
   ext_value_areg=(10,13) noflow
+  ext_value_z1=(3,4) noflow
+  ext_value_0805=(5,8) signed noflow
+  ext_value_rb=(11,13) noflow
+  ext_value_z2=(9,10) noflow
+  ext_value_ext=(8,8) noflow
   ext_value_b0=(13,13) noflow
   ext_value_b1=(12,12) noflow
   ext_value_b2=(11,11) noflow

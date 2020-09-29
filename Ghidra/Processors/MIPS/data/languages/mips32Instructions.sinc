@@ -170,8 +170,29 @@ define pcodeop special2;
     Status = Status & -2;   # clearing last bit (ffff..fffe == -2 signed)
 }
 
+# 0100 0001 011t tttt 0000 1011 1100 0001
+:dmt                            is $(AMODE) & prime=0x10 & mfmc0=0x0B & rt=0 & rd=1 & fct2=0xf & bit5=0 & zero3=1 {
+    zero = VPEControl;
+    VPEControl = VPEControl & ~0x8000;
+}
+:dmt RT                         is $(AMODE) & prime=0x10 & mfmc0=0x0B & RT & rd=1 & fct2=0xf & bit5=0 & zero3=1 {
+    RT = VPEControl;
+    VPEControl = VPEControl & ~0x8000;
+}
+
+# 0100 0001 011t tttt 0000 0000 0000 0001
+:dvpe                           is $(AMODE) & prime=0x10 & mfmc0=0x0B & rt=0 & rd=0 & fct2=0 & bit5=0 & zero3=1 {
+    zero = MVPControl;
+    MVPControl = MVPControl & -2;
+}
+:dvpe RT                        is $(AMODE) & prime=0x10 & mfmc0=0x0B & RT & rd=0 & fct2=0 & bit5=0 & zero3=1 {
+    RT = MVPControl;
+    MVPControl = MVPControl & -2;
+}
+
 # 0000 0000 0000 0000 0000 0000 1100 0000
 :ehb                            is $(AMODE) & prime=0x0 & rs=0x0 & rt=0x0 & rd=0x0 & fct2=0x3 & fct=0x0 {
+    hazzard();
 } 
 
 # 0100 0001 011t tttt 0110 0000 0010 0000
@@ -184,6 +205,16 @@ define pcodeop special2;
     Status = Status | 1;
 }
 
+# 0100 0001 011t tttt 0000 1011 1110 0001
+:emt                            is $(AMODE) & prime=0x10 & mfmc0=0x0B & rt=0 & rd=1 & fct2=0xf & bit5=1 & zero3=1 {
+    zero = VPEControl;
+    VPEControl = VPEControl | 0x8000;
+}
+:emt RT                         is $(AMODE) & prime=0x10 & mfmc0=0x0B & RT & rd=1 & fct2=0xf & bit5=1 & zero3=1 {
+    RT = VPEControl;
+    VPEControl = VPEControl | 0x8000;
+}
+
 # 0100 0010 0000 0000 0000 0000 0001 1000
 :eret                           is $(AMODE) & prime=0x10 & fct=0x18 & bit25=1 & copfill=0  {
     return[EPC];
@@ -191,6 +222,16 @@ define pcodeop special2;
 
 :eretnc							is $(AMODE) & prime=0x10 & fct=0x18 & bit25=1 & copfill=1  {
     return[EPC];
+}
+
+# 0100 0001 011t tttt 0000 0000 0010 0001
+:evpe                           is $(AMODE) & prime=0x10 & mfmc0=0x0B & rt=0 & rd=0 & fct2=0 & bit5=1 & zero3=1 {
+    zero = MVPControl;
+    MVPControl = MVPControl | 1;
+}
+:evpe RT                        is $(AMODE) & prime=0x10 & mfmc0=0x0B & RT & rd=0 & fct2=0 & bit5=1 & zero3=1 {
+    RT = MVPControl;
+    MVPControl = MVPControl | 1;
 }
 
 # 0111 11ss ssst tttt mmmm mLLL LL00 0000 
@@ -455,6 +496,18 @@ define pcodeop special2;
     RT = sext(tmp >> 32);
 }
 
+define pcodeop MFTR;
+
+# 0100 0001 000t tttt dddd d000 0000 0sss
+:mftc0 RD, RT0                  is $(AMODE) & prime=0x10 & copop=8 & RT0 & RD & zero5=0 & op4=0 {
+    RD = MFTR( RT0:$(SIZETO4) );
+}
+
+# 0100 0001 000t tttt dddd d000 0010 0sss
+:mftgpr RD, RTsrc               is $(AMODE) & prime=0x10 & copop=8 & RTsrc & RD & zero5=0 & op4=4 {
+    RD = MFTR( RTsrc:$(SIZETO4) );
+}
+
 # Special case of ADDIU
 # 0010 0100 000t tttt iiii iiii iiii iiii
 :li RT, simmed                is $(AMODE) & prime=9 & rs=0 & RT & simmed            {
@@ -491,6 +544,18 @@ define pcodeop special2;
     low:4 = getCopReg(2:1, arg);
     val:8 = (zext(tmp) << 32) + zext(low);
     setCopReg(2:1, arg, val);
+}
+
+define pcodeop MTTR;
+
+# 0100 0001 100t tttt dddd d000 0000 0sss
+:mttc0 RD0, RTsrc               is $(AMODE) & prime=0x10 & copop=12 & RTsrc & RD0 & zero5=0 & op4=0 {
+    MTTR( RTsrc, RD0:$(SIZETO4) );
+}
+
+# 0100 0001 100t tttt dddd d000 0010 0sss
+:mttgpr RD, RTsrc               is $(AMODE) & prime=0x10 & copop=12 & RTsrc & RD & zero5=0 & op4=4 {
+    MTTR( RTsrc, RD );
 }
 
 :nal             				is $(AMODE) & REL6=0 & prime=1 & cond=0x10 & zero21=0 {
@@ -1392,6 +1457,16 @@ define pcodeop SYNC;
     if (RSsrc == simmed) goto <done>; 
     trap();
     <done> 
+}
+
+define pcodeop yield;
+
+# 0111 11ss sss0 0000 dddd d000 0000 1001
+:yield RSsrc                    is $(AMODE) & prime=0x1F & RSsrc & rt=0 & rd=0 & fct2=0 & fct=9  {
+    yield();
+}
+:yield RD, RSsrc                is $(AMODE) & prime=0x1F & RSsrc & rt=0 & RD & fct2=0 & fct=9  {
+    RD = yield();
 }
 
 ############################

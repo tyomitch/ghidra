@@ -464,6 +464,14 @@ define token instr(32)
     cc          = (18,20)
     rt32        = (16,20)
     rt          = (16,20)
+    rt0_0       = (16,20)
+    rt0_1       = (16,20)
+    rt0_2       = (16,20)
+    rt0_3       = (16,20)
+    rt0_4       = (16,20)
+    rt0_5       = (16,20)
+    rt0_6       = (16,20)
+    rt0_7       = (16,20)
     ftD         = (16,20)
     ft          = (16,20)
     index       = (16,20)
@@ -592,7 +600,7 @@ attach variables [ fs_fcr ] [
 	_		fccr	fexr	_		fenr	_		_		fcsr
 ];
     
-attach variables [ rd0_0 ] [
+attach variables [ rd0_0 rt0_0 ] [
     Index           Random          EntryLo0        EntryLo1 
     Context         PageMask        Wired           HWREna  
     BadVAddr        Count           EntryHi         Compare  
@@ -603,7 +611,7 @@ attach variables [ rd0_0 ] [
     TagLo           TagHi           ErrorEPC        DESAVE 
 ];
 
-attach variables [ rd0_1 ] [
+attach variables [ rd0_1 rt0_1 ] [
     MVPControl      VPEControl      TCStatus        cop0_reg3.1
     ContextConfig   PageGrain       SRSConf0        cop0_reg7.1
     cop0_reg8.1     cop0_reg9.1     cop0_reg10.1    cop0_reg11.1
@@ -614,7 +622,7 @@ attach variables [ rd0_1 ] [
     DataLo.1        DataHi.1        cop0_reg30.1    cop0_reg31.1
 ];
 
-attach variables [ rd0_2 ] [
+attach variables [ rd0_2 rt0_2 ] [
     MVPConf0        VPEConf0        TCBind          cop0_reg3.2
     cop0_reg4.2     cop0_reg5.2     SRSConf1        cop0_reg7.2
     cop0_reg8.2     cop0_reg9.2     cop0_reg10.2    cop0_reg11.2
@@ -625,7 +633,7 @@ attach variables [ rd0_2 ] [
     TagLo.2         TagHi.2         cop0_reg30.2    cop0_reg31.2
 ];
 
-attach variables [ rd0_3 ] [
+attach variables [ rd0_3 rt0_3 ] [
     MVPConf1        VPEConf1        TCRestart       cop0_reg3.3
     cop0_reg4.3     cop0_reg5.3     SRSConf2        cop0_reg7.3
     cop0_reg8.3     cop0_reg9.3     cop0_reg10.3    cop0_reg11.3
@@ -636,7 +644,7 @@ attach variables [ rd0_3 ] [
     DataLo.3        DataHi.3        cop0_reg30.3    cop0_reg31.3
 ];
 
-attach variables [ rd0_4 ] [
+attach variables [ rd0_4 rt0_4 ] [
     cop0_reg0.4     YQMask          TCHalt          cop0_reg3.4
     cop0_reg4.4     cop0_reg5.4     SRSConf3        cop0_reg7.4
     cop0_reg8.4     cop0_reg9.4     cop0_reg10.4    cop0_reg11.4
@@ -647,7 +655,7 @@ attach variables [ rd0_4 ] [
     TagLo.4         TagHi.4         cop0_reg30.4    cop0_reg31.4
 ];
 
-attach variables [ rd0_5 ] [
+attach variables [ rd0_5 rt0_5 ] [
     cop0_reg0.5 VPESchedule TCContext   cop0_reg3.5
     cop0_reg4.5     cop0_reg5.5     SRSConf4        cop0_reg7.5
     cop0_reg8.5     cop0_reg9.5     cop0_reg10.5    cop0_reg11.5
@@ -658,7 +666,7 @@ attach variables [ rd0_5 ] [
     DataLo.5        DataHi.5        cop0_reg30.5    cop0_reg31.5
 ];
 
-attach variables [ rd0_6 ] [
+attach variables [ rd0_6 rt0_6 ] [
     cop0_reg0.6     VPEScheFBack    TCSchedule      cop0_reg3.6
     cop0_reg4.6     cop0_reg5.6     cop0_reg6.6     cop0_reg7.6
     cop0_reg8.6     cop0_reg9.6     cop0_reg10.6    cop0_reg11.6
@@ -669,7 +677,7 @@ attach variables [ rd0_6 ] [
     TagLo.6         TagHi.6         cop0_reg30.6    cop0_reg31.6
 ];
 
-attach variables [ rd0_7 ] [
+attach variables [ rd0_7 rt0_7 ] [
     cop0_reg0.7     VPEOpt          TCScheFBack     cop0_reg3.7
     cop0_reg4.7     cop0_reg5.7     cop0_reg6.7     cop0_reg7.7
     cop0_reg8.7     cop0_reg9.7     cop0_reg10.7    cop0_reg11.7
@@ -699,6 +707,15 @@ RD0: rd0_4  is rd0_4 & sel=4  { export rd0_4; }
 RD0: rd0_5  is rd0_5 & sel=5  { export rd0_5; }
 RD0: rd0_6  is rd0_6 & sel=6  { export rd0_6; }
 RD0: rd0_7  is rd0_7 & sel=7  { export rd0_7; }
+
+RT0: rt0_0  is rt0_0 & sel=0  { export rt0_0; }
+RT0: rt0_1  is rt0_1 & sel=1  { export rt0_1; }
+RT0: rt0_2  is rt0_2 & sel=2  { export rt0_2; }
+RT0: rt0_3  is rt0_3 & sel=3  { export rt0_3; }
+RT0: rt0_4  is rt0_4 & sel=4  { export rt0_4; }
+RT0: rt0_5  is rt0_5 & sel=5  { export rt0_5; }
+RT0: rt0_6  is rt0_6 & sel=6  { export rt0_6; }
+RT0: rt0_7  is rt0_7 & sel=7  { export rt0_7; }
 
 RD: rd          is rd           { export rd; }
 RDsrc: rd       is rd           { export rd; }

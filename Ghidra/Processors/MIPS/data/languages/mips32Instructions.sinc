@@ -13,6 +13,38 @@
 @define AMODE "epsilon"			# Mips16 instructions not supported - Mips32 only
 @endif
 
+# 0111 1100 000t tttt dddd d010 0101 0010
+:absq_s.ph RD,  RTsrc                 is $(AMODE) & prime=0x1F & rs=0 & RTsrc & fct2=9 & fct=0x12 & RD {
+    tmp1:2 = RTsrc:2;
+    tmp2:2 = RTsrc(2);
+    if (tmp1 == 0x8000) goto <small1>;
+    if ((tmp1 & 0x8000) == 0) goto <done1>;
+    tmp1 = -tmp1;
+    goto <done1>;
+    <small1>
+    tmp1 = 0x7fff;
+    <done1>
+    if (tmp2 == 0x8000) goto <small2>;
+    if ((tmp2 & 0x8000) == 0) goto <done2>;
+    tmp2 = -tmp2;
+    goto <done2>;
+    <small2>
+    tmp2 = 0x7fff;
+    <done2>
+    RD = zext(tmp2<<16) | zext(tmp1);
+}
+
+# 0111 1100 000t tttt dddd d100 0101 0010
+:absq_s.w RD,  RTsrc                  is $(AMODE) & prime=0x1F & rs=0 & RTsrc & fct2=0x11 & fct=0x12 & RD {
+    if (RTsrc:4 == 0x80000000) goto <small>;
+    if ((RTsrc & 0x80000000) == 0) goto <done>;
+    RD = sext( -RTsrc:4 );
+    goto <done>;
+    <small>
+    RD = 0x7fffffff;
+    <done>
+}
+
 # 0000 00ss ssst tttt dddd d000 0010 0000
 :add RD32, RS32src, RT32src           is $(AMODE) & prime=0 & sa=0 & fct=0x20 & RD32 & RS32src & RT32src & RD {
     RD32 = RS32src + RT32src;
@@ -27,6 +59,21 @@
 @ifdef MIPS64
     RT = sext(RT32);
 @endif
+}
+
+# 0111 11ss ssst tttt dddd d101 1001 0000
+:addq_s.w RD, RSsrc, RTsrc          is $(AMODE) & prime=0x1F & RSsrc & RTsrc & fct2=0x16 & fct=0x10 & RD {
+    tmp:5 = sext(RSsrc:4) + sext(RTsrc:4);
+    if (tmp < -0x80000000) goto <small>;
+    if (tmp >  0x7fffffff) goto <big>;
+    goto <done>;
+    <small>
+    tmp = -0x80000000;
+    goto <done>;
+    <big>
+    tmp = 0x7fffffff;
+    <done>
+    RD = sext( tmp:4 );
 }
 
 # 0000 00ss ssst tttt dddd d000 0010 0001
@@ -665,6 +712,53 @@ define pcodeop MTTR;
     *[ram]:2 OFF_BASER6 = RTsrc:2;  
 }
 
+# 0111 11ss ssss 0000 000d d110 1011 1000
+:shilo achi, aclo, signed_sa    is $(AMODE) & prime=0x1F & signed_sa & zero1319=0 & achi & aclo & fct2=0x1a & fct=0x38 {
+    tmp:8 = zext( achi ) << 32 | zext( aclo );
+    if (signed_sa:1 < 0) goto <left>;
+    tmp = tmp >> signed_sa:1;
+    goto <done>;
+    <left>
+    tmp = tmp << -signed_sa:1;
+    <done>
+    aclo = zext(tmp:4);
+    tmp = tmp >> 32;
+    achi = zext(tmp:4);
+}
+
+# 0111 11ss ssst tttt dddd d101 1001 0011
+:shllv_s.w RD, RTsrc, RSsrc     is $(AMODE) & prime=0x1F & RSsrc & RTsrc & fct2=0x16 & fct=0x13 & RD {
+    shift:1 = RSsrc:1 & 0x1f;
+    tmp:8 = sext(RTsrc:4);
+    tmp = tmp << shift;
+    discard:8 = tmp >> 31;
+    if (discard == 0 || discard == 0x1ffffffff) goto <done>;
+    if ((discard & 0x100000000) != 0) goto <negative>;
+    tmp = 0x7fffffff;
+    goto <done>;
+    <negative>
+    tmp = 0x80000000;
+    goto <done>;
+    <done>
+    RD = sext( tmp:4 );
+}
+
+# 0111 11ss ssst tttt dddd d101 0001 0011
+:shll_s.w RD, RTsrc, format     is $(AMODE) & prime=0x1F & format & RTsrc & fct2=0x14 & fct=0x13 & RD {
+    tmp:8 = sext(RTsrc:4);
+    tmp = tmp << format:1;
+    discard:8 = tmp >> 31;
+    if (discard == 0 || discard == 0x1ffffffff) goto <done>;
+    if ((discard & 0x100000000) != 0) goto <negative>;
+    tmp = 0x7fffffff;
+    goto <done>;
+    <negative>
+    tmp = 0x80000000;
+    goto <done>;
+    <done>
+    RD = sext( tmp:4 );
+}
+
 # 0000 0000 000t tttt dddd daaa aa00 0000
 :sll RD32, RT32src, sa              is $(AMODE) & prime=0 & fct=0 & rs=0 & RD32 & RT32src & sa & RD {
     RD32 = RT32src << sa;
@@ -739,6 +833,22 @@ define pcodeop MTTR;
     RD = sext(RD32);
 @endif
 }
+
+# 0111 11ss ssst tttt dddd d101 1101 0000
+:subq_s.w RD, RSsrc, RTsrc            is $(AMODE) & prime=0x1F & RSsrc & RTsrc & fct2=0x17 & fct=0x10 & RD {
+    tmp:5 = sext(RSsrc:4) - sext(RTsrc:4);
+    if (tmp < -0x80000000) goto <small>;
+    if (tmp >  0x7fffffff) goto <big>;
+    goto <done>;
+    <small>
+    tmp = -0x80000000;
+    goto <done>;
+    <big>
+    tmp = 0x7fffffff;
+    <done>
+    RD = sext( tmp:4 );
+}
+
 # 0000 00ss ssst tttt dddd d000 0010 0011
 :subu RD32, RS32src, RT32src          is $(AMODE) & prime=0 & fct=0x23 & RS32src & RT32src & RD32 & sa=0 & RD {
     RD32 = RS32src - RT32src;

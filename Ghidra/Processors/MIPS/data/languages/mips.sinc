@@ -450,6 +450,7 @@ define token instr(32)
     jsub	= (21,25)
     acflo       = (21,22)
     acfhi       = (21,22)
+    signed_sa   = (20,25) signed
     breakcode   = (6,25)
     off26       = (0,25) signed			# 26 bit signed offset, e.g. balc, bc
     ind26       = (0,25)				# 26 bit unsigned index, e.g. jal
@@ -484,6 +485,7 @@ define token instr(32)
     nd          = (17,17)
     tf          = (16,16)
     zero1320    = (13,20)
+    zero1319    = (13,19)
     zero1315    = (13,15)
     szero       = (11,25)
     baser6	= (11,15)
